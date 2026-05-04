@@ -131,6 +131,7 @@ select.inp option { background: #111820; }
 .badge   { font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: 600; flex-shrink: 0; }
 .b-yes   { background: #1a3a2a; color: #7ec8a0; }
 .b-no    { background: #3a1a1a; color: #e07070; }
+.b-maybe { background: #1a2030; color: #c0a060; }
 .g-acts  { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
 .btn-wa  { background: #1a2d1a; color: #7ec8a0; border: 1px solid #2a4a2a; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
 .btn-cp  { background: #1a2232; color: #8899bb; border: 1px solid #2a3a50; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
@@ -563,11 +564,7 @@ function loadEventForm() {
   if (ev.name) document.getElementById('f-name').value = ev.name;
   if (ev.date) document.getElementById('cal-lbl').textContent = ev.date;
   if (ev.prog) document.getElementById('f-prog').value = ev.prog;
-  const defaultMsg = `Selam {isim} 👋
-{etkinlik} adında bir etkinlik düzenliyorum. Uygunsan gelmene sevinirim.
-Detaylar burada: {link}
-Gelip gelemeyeceğini işaretlersen planı ona göre netleştireceğim.
-Görüşürüz 🎶`;
+  const defaultMsg = "Selam {isim},\n{etkinlik} adında bir etkinlik düzenliyorum. Uygunsan gelmene sevinirim.\nAşağıdaki linkten cevabını bırakırsan sevinirim:\n{link}\nGörüşürüz.";
   document.getElementById('f-msg').value = (ev.msg && ev.msg.trim()) ? ev.msg : defaultMsg;
 
   if (ev.locMode === 'manual') {
@@ -660,8 +657,9 @@ function renderGuests() {
   document.getElementById('dash-goto').classList.toggle('hidden', !guests.length);
   if (!guests.length) { list.innerHTML = '<div class="empty">Henüz davetli eklenmedi</div>'; return; }
   list.innerHTML = guests.map(g => {
-    const badge = g.rsvp
-      ? `<span class="badge ${g.rsvp==='yes'?'b-yes':'b-no'}">${g.rsvp==='yes'?'✓ Geliyor':'✕ Gelmiyor'}</span>` : '';
+    const bmap = {yes:'✓ Geliyor',no:'✕ Gelmiyor',maybe:'? Belki'};
+    const bcls = {yes:'b-yes',no:'b-no',maybe:'b-maybe'};
+    const badge = g.rsvp ? `<span class="badge ${bcls[g.rsvp]||''}">${bmap[g.rsvp]||''}</span>` : '';
     return `<div class="g-card">
       <div class="g-info">
         <div class="av">${g.name[0].toUpperCase()}</div>
@@ -704,9 +702,10 @@ function renderDash() {
   const sec = document.getElementById('d-sects');
   sec.innerHTML = '';
   [
-    { f:'yes',  lbl:'Gelenler',         col:'#7ec8a0' },
-    { f:'no',   lbl:'Gelmeyenler',       col:'#e07070' },
-    { f:null,   lbl:'Yanıt Bekleyenler', col:'#8899bb' },
+    { f:'yes',   lbl:'Gelenler',          col:'#7ec8a0' },
+    { f:'maybe', lbl:'Belki Gelenler',     col:'#c0a060' },
+    { f:'no',    lbl:'Gelmeyenler',        col:'#e07070' },
+    { f:null,    lbl:'Yanıt Bekleyenler',  col:'#8899bb' },
   ].forEach(({ f, lbl, col }) => {
     const list = guests.filter(g => g.rsvp === f);
     if (!list.length) return;
@@ -729,7 +728,7 @@ function renderDash() {
 function updateSb() {
   document.getElementById('sb-yes').textContent     = guests.filter(g=>g.rsvp==='yes').length;
   document.getElementById('sb-no').textContent      = guests.filter(g=>g.rsvp==='no').length;
-  document.getElementById('sb-pending').textContent = guests.filter(g=>!g.rsvp).length;
+  document.getElementById('sb-pending').textContent = guests.filter(g=>!g.rsvp && g.rsvp!=='maybe').length;
 }
 
 // ════════════════════════════════════════════════════════
@@ -741,10 +740,10 @@ function renderRSVP(gid) {
   if (!guest) { card.innerHTML = `<p style="color:#c0a080;font-size:14px">Bu davet linki geçerli değil.</p>`; return; }
   if (guest.rsvp) { showThank(card, guest, guest.rsvp); return; }
 
-  const dateRow = ev.date     ? `<div class="r-det"><span class="r-ico">📅</span><span>${x(ev.date)}</span></div>` : '';
-  const locTxt  = ev.location ? ev.location.split(',').slice(0,3).join(',') : '';
-  const locRow  = locTxt      ? `<div class="r-det"><span class="r-ico">📍</span><span>${x(locTxt)}</span></div>` : '';
-  const progRow = ev.prog     ? `<div class="r-det"><span class="r-ico">🗒</span><span style="white-space:pre-line">${x(ev.prog)}</span></div>` : '';
+  const dateRow = ev.date     ? `<div class="r-det"><span class="r-ico">Tarih:</span><span>${x(ev.date)}</span></div>` : '';
+  const locTxt  = ev.location ? ev.location : '';
+  const locRow  = locTxt      ? `<div class="r-det"><span class="r-ico">Yer:</span><span>${x(locTxt)}</span></div>` : '';
+  const progRow = (ev.prog && ev.prog.trim()) ? `<div class="r-det"><span class="r-ico">Program:</span><span style="white-space:pre-line">${x(ev.prog)}</span></div>` : '';
   const mapLink = ev.mapsUrl  ? `<a class="r-mlink" href="${x(ev.mapsUrl)}" target="_blank">🗺 Google Maps'te gör →</a>` : '';
 
   card.innerHTML = `
@@ -754,9 +753,10 @@ function renderRSVP(gid) {
     <div class="r-dets">${dateRow}${locRow}${progRow}</div>
     ${mapLink}
     <p class="r-q">Katılacak mısın?</p>
-    <div class="r-btns">
-      <button class="r-btn r-yes" onclick="respond('${gid}','yes')">✓ Geliyorum</button>
-      <button class="r-btn r-no"  onclick="respond('${gid}','no')">✕ Gelemiyorum</button>
+    <div class="r-btns" style="flex-direction:column;gap:12px">
+      <button class="r-btn r-yes" onclick="respond('${gid}','yes')">Geliyorum</button>
+      <button class="r-btn" onclick="respond('${gid}','maybe')" style="background:#1a2232;color:#c0a060;border:1px solid #3a4a60;padding:14px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;width:100%">Belki</button>
+      <button class="r-btn r-no" onclick="respond('${gid}','no')">Gelemiyorum</button>
     </div>`;
 }
 
@@ -767,13 +767,13 @@ function respond(gid, ans) {
 }
 
 function showThank(card, guest, ans) {
-  const ok = ans === 'yes';
-  card.innerHTML = `
-    <div class="r-chk">${ok?'✓':'✕'}</div>
-    <h2 class="r-tt">${ok?'Görüşürüz!':'Anladık, bir dahaki sefere!'}</h2>
-    <p class="r-ts">${ok
-      ? `${x(guest.name)}, katılımın kaydedildi. Seni bekliyoruz.`
-      : `${x(guest.name)}, cevabın iletildi.`}</p>`;
+  const msgs = {
+    yes:   { icon: '✓', title: 'Görüşürüz!',           sub: x(guest.name) + ', katılımın kaydedildi.' },
+    no:    { icon: '✕', title: 'Anladık, bir dahaki sefere!', sub: x(guest.name) + ', cevabın iletildi.' },
+    maybe: { icon: '?', title: 'Tamam, bekleyeceğiz!',  sub: x(guest.name) + ', "belki" olarak kaydedildi.' },
+  };
+  const m = msgs[ans] || msgs.no;
+  card.innerHTML = `<div class="r-chk">${m.icon}</div><h2 class="r-tt">${m.title}</h2><p class="r-ts">${m.sub}</p>`;
 }
 
 // ════════════════════════════════════════════════════════
