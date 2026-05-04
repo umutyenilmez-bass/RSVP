@@ -178,10 +178,27 @@ select.inp option { background: #111820; }
 
 @media (max-width: 640px) {
   #sidebar { display: none; }
-  #content { margin-left: 0; padding: 16px; }
+  #content { margin-left: 0; padding: 16px; padding-bottom: 80px; }
   .s-grid  { grid-template-columns: repeat(2,1fr); }
   .cal-pop { width: calc(100vw - 32px); }
 }
+#mobile-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 500;
+  background: #0a0e14; border-top: 1px solid #1e2530;
+  flex-direction: row;
+}
+#mobile-nav button {
+  flex: 1; padding: 14px 0 10px; border: none; background: transparent;
+  color: #6a7a8a; font-size: 11px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+#mobile-nav button.active { color: #c0a060; }
+#mobile-nav button span.mn-icon { font-size: 20px; }
+@media (max-width: 640px) {
+  #mobile-nav { display: flex; }
+}
+#f-msg { font-size: 16px !important; }
 </style>
 </head>
 <body>
@@ -202,6 +219,22 @@ select.inp option { background: #111820; }
         <div class="sb-pill"><span style="color:#e07070">●</span> <span id="sb-no">0</span> Gelmiyor</div>
         <div class="sb-pill"><span style="color:#8899aa">●</span> <span id="sb-pending">0</span> Bekliyor</div>
       </div>
+    </div>
+
+    <!-- MOBILE NAV -->
+    <div id="mobile-nav">
+      <button data-v="setup" onclick="showView('setup')">
+        <span class="mn-icon">⚙</span>
+        <span>Etkinlik</span>
+      </button>
+      <button data-v="guests" onclick="showView('guests')">
+        <span class="mn-icon">◎</span>
+        <span>Davetliler</span>
+      </button>
+      <button data-v="dashboard" onclick="showView('dashboard')">
+        <span class="mn-icon">▦</span>
+        <span>Takip</span>
+      </button>
     </div>
 
     <div id="content">
@@ -336,6 +369,17 @@ select.inp option { background: #111820; }
 // ════════════════════════════════════════════════════════
 let guests = JSON.parse(localStorage.getItem('gl') || '[]');
 let ev     = JSON.parse(localStorage.getItem('ev') || '{}');
+// Eski formattan gelen bozuk mesaj şablonunu temizle
+if (ev.msg !== undefined && (
+  ev.msg.includes('\uD83D') ||
+  ev.msg.includes('nasılsın') ||
+  ev.msg.includes('etkinlikdüzenliyorum') ||
+  ev.msg.includes('tıklayarak') ||
+  (ev.msg.trim().length < 10)
+)) {
+  ev.msg = '';
+  localStorage.setItem('ev', JSON.stringify(ev));
+}
 
 function saveG() { localStorage.setItem('gl', JSON.stringify(guests)); }
 function saveE() { localStorage.setItem('ev', JSON.stringify(ev)); }
@@ -361,6 +405,8 @@ function showView(name) {
     document.getElementById('v-'+v).classList.add('hidden'));
   document.getElementById('v-'+name).classList.remove('hidden');
   document.querySelectorAll('.nav-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.v === name));
+  document.querySelectorAll('#mobile-nav button').forEach(b =>
     b.classList.toggle('active', b.dataset.v === name));
   if (name === 'guests')    renderGuests();
   if (name === 'dashboard') renderDash();
