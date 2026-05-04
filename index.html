@@ -778,27 +778,30 @@ function updateSb() {
 function renderRSVP(gid) {
   const card  = document.getElementById('r-card');
   const guest = guests.find(g => g.id === gid);
-  if (!guest) { card.innerHTML = `<p style="color:#c0a080;font-size:14px">Bu davet linki geçerli değil.</p>`; return; }
-  if (guest.rsvp) { showThank(card, guest, guest.rsvp); return; }
+  if (!guest) { card.innerHTML = '<p style="color:#c0a080;font-size:14px">Bu davet linki geçerli değil.</p>'; return; }
 
-  const dateRow = ev.date     ? `<div class="r-det"><span class="r-ico">Tarih:</span><span>${x(ev.date)}</span></div>` : '';
-  const locTxt  = ev.location ? ev.location : '';
-  const locRow  = locTxt      ? `<div class="r-det"><span class="r-ico">Yer:</span><span>${x(locTxt)}</span></div>` : '';
-  const progRow = (ev.prog && ev.prog.trim()) ? `<div class="r-det"><span class="r-ico">Program:</span><span style="white-space:pre-line">${x(ev.prog)}</span></div>` : '';
-  const mapLink = ev.mapsUrl  ? `<a class="r-mlink" href="${x(ev.mapsUrl)}" target="_blank">🗺 Google Maps'te gör →</a>` : '';
+  const cur = guest.rsvp;
+  const hl  = (v) => cur === v ? 'box-shadow:0 0 0 2px #c0a060;font-weight:800;' : 'opacity:0.75;';
 
-  card.innerHTML = `
-    <span class="r-lbl">Davetiye</span>
-    <h1 class="r-name">${x(ev.name||'Etkinlik')}</h1>
-    <p class="r-gname">Merhaba, ${x(guest.name)} 👋</p>
-    <div class="r-dets">${dateRow}${locRow}${progRow}</div>
-    ${mapLink}
-    <p class="r-q">Katılacak mısın?</p>
-    <div class="r-btns" style="flex-direction:column;gap:12px">
-      <button class="r-btn r-yes" onclick="respond('${gid}','yes')">Geliyorum</button>
-      <button class="r-btn" onclick="respond('${gid}','maybe')" style="background:#1a2232;color:#c0a060;border:1px solid #3a4a60;padding:14px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;width:100%">Belki</button>
-      <button class="r-btn r-no" onclick="respond('${gid}','no')">Gelemiyorum</button>
-    </div>`;
+  const dateRow = ev.date          ? '<div class="r-det"><span class="r-ico">Tarih:</span><span>' + x(ev.date) + '</span></div>' : '';
+  const locRow  = ev.location      ? '<div class="r-det"><span class="r-ico">Yer:</span><span>' + x(ev.location) + '</span></div>' : '';
+  const progRow = (ev.prog && ev.prog.trim()) ? '<div class="r-det"><span class="r-ico">Program:</span><span style="white-space:pre-line">' + x(ev.prog) + '</span></div>' : '';
+  const mapLink = ev.mapsUrl       ? '<a class="r-mlink" href="' + x(ev.mapsUrl) + '" target="_blank">Google Maps'te gör &rarr;</a>' : '';
+  const curTxt  = cur === 'yes' ? 'Geliyorum' : cur === 'maybe' ? 'Belki' : cur === 'no' ? 'Gelemiyorum' : '';
+
+  card.innerHTML =
+    '<span class="r-lbl">Davetiye</span>' +
+    '<h1 class="r-name">' + x(ev.name || 'Etkinlik') + '</h1>' +
+    '<p class="r-gname">Merhaba, ' + x(guest.name) + '</p>' +
+    '<div class="r-dets">' + dateRow + locRow + progRow + '</div>' +
+    mapLink +
+    '<p class="r-q">' + (cur ? 'Cevabini degistirmek istersen:' : 'Katilacak misin?') + '</p>' +
+    '<div class="r-btns" style="flex-direction:column;gap:12px">' +
+      '<button class="r-btn r-yes" style="' + hl('yes') + '" onclick="respond('' + gid + '','yes')">Geliyorum</button>' +
+      '<button class="r-btn" style="background:#1a2232;color:#c0a060;border:1px solid #3a4a60;padding:14px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;width:100%;' + hl('maybe') + '" onclick="respond('' + gid + '','maybe')">Belki</button>' +
+      '<button class="r-btn r-no" style="' + hl('no') + '" onclick="respond('' + gid + '','no')">Gelemiyorum</button>' +
+    '</div>' +
+    (cur ? '<p style="margin-top:14px;font-size:12px;color:#4a5a6a;text-align:center">Mevcut cevabın: <strong style="color:#c0a060">' + curTxt + '</strong></p>' : '');
 }
 
 function respond(gid, ans) {
