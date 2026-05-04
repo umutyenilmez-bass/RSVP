@@ -367,7 +367,7 @@ select.inp option { background: #111820; }
 // ════════════════════════════════════════════════════════
 // STATE
 // ════════════════════════════════════════════════════════
-const APP_VERSION = 'v5';
+const APP_VERSION = 'v6';
 if (localStorage.getItem('app_version') !== APP_VERSION) {
   localStorage.removeItem('ev');
   localStorage.setItem('app_version', APP_VERSION);
@@ -604,7 +604,7 @@ function loadEventForm() {
   if (ev.name) document.getElementById('f-name').value = ev.name;
   if (ev.date) document.getElementById('cal-lbl').textContent = ev.date;
   if (ev.prog) document.getElementById('f-prog').value = ev.prog;
-  const defaultMsg = "Selam {isim},\n{etkinlik} adında bir etkinlik düzenliyorum. Uygunsan gelmene sevinirim.\nTarih: {tarih}\nYer: {yer}\nProgram: {notlar}\nAşağıdaki linkten cevabını bırakırsan sevinirim:\n{link}\nGörüşürüz.";
+  const defaultMsg = "Selam {isim},\n{etkinlik} adında bir etkinlik düzenliyorum. Uygunsan gelmene sevinirim.\nTarih: {tarih}\nYer: {yer}\nKonum: {harita}\nProgram: {notlar}\nAşağıdaki linkten cevabını bırakırsan sevinirim:\n{link}\nGörüşürüz.";
   document.getElementById('f-msg').value = (ev.msg && ev.msg.trim()) ? ev.msg : defaultMsg;
 
   if (ev.locMode === 'manual') {
@@ -670,19 +670,21 @@ function buildMsg(g) {
     return lines.join("\n");
   }
   let msg = ev.msg;
-  // Remove lines with empty values
-  if (!ev.date)     msg = msg.replace(/Tarih: \{tarih\}\n?/g, '');
-  if (!ev.location) msg = msg.replace(/Yer: \{yer\}\n?/g, '');
-  if (!ev.prog || !ev.prog.trim()) msg = msg.replace(/Program: \{notlar\}\n?/g, '');
+  if (!ev.date)                      msg = msg.replace(/Tarih: \{tarih\}\n?/g, '');
+  if (!ev.location)                  msg = msg.replace(/Yer: \{yer\}\n?/g, '');
+  if (!ev.mapsUrl)                   msg = msg.replace(/Konum: \{harita\}\n?/g, '');
+  if (!ev.prog || !ev.prog.trim())   msg = msg.replace(/Program: \{notlar\}\n?/g, '');
   return msg
     .replace(/{isim}/g,     g.name)
     .replace(/{etkinlik}/g, ev.name || '')
     .replace(/{tarih}/g,    ev.date || '')
     .replace(/{yer}/g,      ev.location || '')
+    .replace(/{harita}/g,   ev.mapsUrl || '')
     .replace(/{notlar}/g,   ev.prog || '')
     .replace(/{link}/g,     rsvpLink(g))
     .replace(/\n{3,}/g,    '\n\n');
 }
+
 
 
 function openWA(id) {
