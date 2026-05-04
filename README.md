@@ -19,4 +19,4 @@ Kişiselleştirilmiş WhatsApp davet ve RSVP takip uygulaması.
 
 ## Canlı
 
-[https://umutyenilmez-bass.github.io/davet](https://umutyenilmez-bass.github.io/davet)
+[https://umutyenilmez-bass.github.io/RSVP](https://umutyenilmez-bass.github.io/RSVP)

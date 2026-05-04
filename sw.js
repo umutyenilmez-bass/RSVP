@@ -1,8 +1,8 @@
 const CACHE = 'davetiye-v1';
 const ASSETS = [
-  '/davet/',
-  '/davet/index.html',
-  '/davet/manifest.json',
+  '/RSVP/',
+  '/RSVP/index.html',
+  '/RSVP/manifest.json',
 ];
 
 self.addEventListener('install', e => {
