@@ -367,19 +367,13 @@ select.inp option { background: #111820; }
 // ════════════════════════════════════════════════════════
 // STATE
 // ════════════════════════════════════════════════════════
+const APP_VERSION = 'v4';
+if (localStorage.getItem('app_version') !== APP_VERSION) {
+  localStorage.removeItem('ev');
+  localStorage.setItem('app_version', APP_VERSION);
+}
 let guests = JSON.parse(localStorage.getItem('gl') || '[]');
 let ev     = JSON.parse(localStorage.getItem('ev') || '{}');
-// Eski formattan gelen bozuk mesaj şablonunu temizle
-if (ev.msg !== undefined && (
-  ev.msg.includes('\uD83D') ||
-  ev.msg.includes('nasılsın') ||
-  ev.msg.includes('etkinlikdüzenliyorum') ||
-  ev.msg.includes('tıklayarak') ||
-  (ev.msg.trim().length < 10)
-)) {
-  ev.msg = '';
-  localStorage.setItem('ev', JSON.stringify(ev));
-}
 
 function saveG() { localStorage.setItem('gl', JSON.stringify(guests)); }
 function saveE() { localStorage.setItem('ev', JSON.stringify(ev)); }
