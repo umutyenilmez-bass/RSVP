@@ -1,6 +1,6 @@
 {
-  "name": "Davetiye & RSVP",
-  "short_name": "Davetiye",
+  "name": "RSVP",
+  "short_name": "RSVP",
   "description": "Kişiselleştirilmiş WhatsApp davet ve RSVP takip uygulaması",
   "start_url": "/RSVP/",
   "scope": "/RSVP/",
